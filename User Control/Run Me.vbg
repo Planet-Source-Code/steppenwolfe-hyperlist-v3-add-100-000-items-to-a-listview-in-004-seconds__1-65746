@@ -1,0 +1,3 @@
+VBGROUP 5.0
+Project=prjHyperListUc.vbp
+StartupProject=Test Harness\prjHyperListUCHarness.vbp
