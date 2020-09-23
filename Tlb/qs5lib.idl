@@ -1,0 +1,146 @@
+#define RTCALL _stdcall
+[
+uuid(008b4f47-41cc-4777-ab93-2945cb081116),
+helpstring("QS5 Storm - QS5 Memory Manipulation Library"),
+version(1.0)
+]
+
+/*
+I started this after searching for terms like 'copymemory array'
+and 'faster then copymemory' etc., and came across a newsgroup 
+discussion about the native putmem call in the vb runtime.
+It was only after, (painfully), adding the various pointer aliases
+lpstr and copymemory calls, that I came across this most excellent
+article/library by Michel Rutten http://www.xbeat.net/vbspeed/i_VBVM6Lib.html
+I have chosen to remain with this format for a couple of reasons, namely
+direct calls require a shorter processing cycle then the propget/propput
+format in the above mentioned library, (and this is all about speed people..),
+and, the calls and structure of the lib are in line with the Q5- Hyperlist
+routines that this library intends to serve.
+One warning though, be careful about passing null pointers into the 'put' calls,
+(particularly objects). By passing and casting pointers directly, you are
+gaining a lot of speed, but you are also without the checking apparatus of
+the runtime, (acting as an insulator to mistakes).. anyways, enjoy!
+John
+																			*/
+library qs5int
+
+{
+importlib("stdole2.tlb");
+
+	typedef struct VBUnkDesc {
+	long pVTable;
+	long RefCnt;
+	} VBUnkDesc;
+
+    [dllname("kernel32.dll")]
+    module Kernel32 {
+
+		//////////////////////////////////
+		//	 Copy Memory Aliases		//
+		//////////////////////////////////
+
+		// copymemory
+        [entry("RtlMoveMemory"), helpstring("Copy Memory using the varaiables.")] 
+		void CopyMemBr([in] void* lDest, [in] void* lSource, [in] long cbCopy);
+
+		// copymem byval
+        [entry("RtlMoveMemory"), helpstring("Copy Memory using address pointers.")] 
+		void CopyMemBv([in] long lDestAdd, [in] long lSrcAdd, [in] long cbCopy);
+
+		//////////////////////////////////
+		//	 String Compare Functions	//
+		//////////////////////////////////
+
+		// string compare
+        [entry("CompareStringA"), helpstring("CompareString function using pointers.")] 
+		int CompareStr([in] long Locale, [in] long dwCmpFlags, [in] long lpString1, [in] long cchCount1, [in] long lpString2, [in] long cchCount2);
+
+		// string comp case byval
+        [entry("lstrcmpA"), helpstring("lstrcmp function: Case sensitive string comparison, using pointers.")] 
+		int StrCompC([in] long lSPtr1, [in]  long lSPtr2);
+
+		// string comp no case byval
+        [entry("lstrcmpiA"), helpstring("lstrcmpi function: Compare Strings ignoring case by using pointers.")] 
+		int StrCompI([in] long lSPtr1, [in]  long lSPtr2);
+
+		// string comp case byref
+        [entry("lstrcmpA"), helpstring("Case Sensitive string comparison, using strings byref.")] 
+		int StrCompSC([in] void* lStr1, [in]  void* lStr2);
+
+		// string no comp case byref
+        [entry("lstrcmpiA"), helpstring("Case Sensitive string comparison, using strings byref.")] 
+		int StrCompSI([in] void* lStr1, [in]  void* lStr2);
+	}
+
+	[dllname("Shlwapi.dll")]
+	module Shlwapi {
+		[entry("StrCmpLogicalW"), helpstring("Byte comparison function using pointers.")] 
+		long StrCmpLogical([in] long lPrt1, [in] long lPrt2);
+
+	}
+
+	//pointer aliases and internal memory usage
+	[dllname("msvbvm60.dll")]
+	module msvbvm60 {
+
+		//////////////////////////////////
+		//	 Get Pointers to Data		//
+		//////////////////////////////////
+
+		// return any array pointer type except string, ex. lPtr = GetAVPtr(lngArray) 
+		[entry("VarPtr"), helpstring("Return a pointer to an array.")]
+		long __stdcall GetAVPtr([in] SAFEARRAY(void) * aPtr);
+
+		// return string array pointer, ex. lPtr = GetASPtr(strArray) 
+		[entry("VarPtr"), helpstring("Return a pointer to a string array.")]
+		long __stdcall GetASPtr([in] SAFEARRAY(BSTR) * aPtr);
+
+		// return variant pointer, eq. VarPtr, returns mem location 
+	    [entry("VarPtr"), helpstring("Return a pointer to a variant.")]
+		long __stdcall GetVarPtr([in] void * lpRetVal);
+
+		[entry("VarPtr"), helpstring("Return a pointer to an object.")]
+		long __stdcall GetObjPtr([in] IUnknown* Ptr);
+
+		// return string pointer, eq. StrPtr, return an array members string mem location 
+	    [entry("VarPtr"), helpstring("Return a pointer to a string.")]
+		long __stdcall GetStrPtr([in] BSTR BStr);
+
+		//////////////////////////////////
+		// GetMem and PutMem Functions  //
+		//////////////////////////////////
+
+		// get byte
+		[entry("GetMem1"), helpstring("Get pointer to byte data.")] 
+		void GetMemByte([in] long Addr, [out] void* bByte);
+
+		//get integer
+		[entry("GetMem2"), helpstring("Return a pointer to an integer.")] 
+
+		void GetMemInt([in] long Addr, [out] void* iInteger);
+		// get long
+		[entry("GetMem4"), helpstring("Return a pointer to a 4 byte data type.")] 
+		void GetMemLong([in] long Addr, [out] void* lLong);
+
+		// get currency
+		[entry("GetMem8"), helpstring("Return a pointer to an 8 byte data type.")] 
+		void GetMemCur([in] long Addr, [out] void* cCurrency);
+
+		// put byte
+		[entry("PutMem1"), helpstring("Put byte pointer into address.")] 
+		void PutMemByte([in] long Addr, [in] void* bByte);
+		
+		// put integer
+		[entry("PutMem2"), helpstring("Put integer pointer into address.")] 
+		void PutMemInt([in] long Addr, [in] void* iInteger);
+
+		// put long
+		[entry("PutMem4"), helpstring("Put 4 byte data type pointer into address.")] 
+		void PutMemLong([in] long Addr, [in] long lLong);
+
+		// put currency
+		[entry("PutMem8"), helpstring("Put 8 byte data type pointer into address.")]
+		void PutMemCur([in] long Addr, [in] void* cCurrency);
+	}
+}

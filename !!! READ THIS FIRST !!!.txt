@@ -1,0 +1,22 @@
+HyperList VIII
+
+.:Library Version:.
+
+Both the HyperListDll, and prjHyperHarness projects use the qs5lib.tlb type library.
+A type library must be registered before it can be used, but this is easy if you simply follow these steps:
+
+1) Open the group project grpTest.vbg, you may get a missing dependency error, that is ok..
+2) You will see two projects, select HyperListDll in the project explorer window, and click project > references. You will probably see an entry 'Misssing: QS5 Storm..', uncheck it.
+3) Click browse, and navigate to the \Tlb subfolder included with the project, (if you do not see the qs5lib.tlb file, change the 'File Type' to .tlb).
+4) Select the qs5lib.tlb file, and save the project.
+5) Repeat for the prjHyperHarness project if necessary.
+6) Yes, it really is that simple..
+7) Have fun..
+
+
+.:Usercontrol Version:.
+
+The usercontrol requires the OleGuids3.tlb during design time, (it has no dependencies on compiled control)
+In the UserControl folder, click the Run Me.vbg group. Highlite the usercontrol in the project explorer. Go to the Project > References menu. Browse to the Tlb folder, and add a reference to the OleGuids3.tlb type library, then save the project.
+
+John
